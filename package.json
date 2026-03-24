@@ -1,0 +1,49 @@
+{
+  "name": "skill-shelf",
+  "title": "Sniffing Skill",
+  "description": "Search, read, edit, and organize local AI skills.",
+  "icon": "icon.png",
+  "author": "Grass",
+  "license": "MIT",
+  "platforms": [
+    "macOS"
+  ],
+  "categories": [
+    "Developer Tools",
+    "Productivity"
+  ],
+  "keywords": [
+    "skills",
+    "codex",
+    "claude",
+    "cursor",
+    "raycast"
+  ],
+  "commands": [
+    {
+      "name": "search-skills",
+      "title": "Search Skills",
+      "description": "Search and manage local AI skills",
+      "mode": "view"
+    }
+  ],
+  "scripts": {
+    "dev": "ray develop",
+    "build": "ray build",
+    "lint": "eslint .",
+    "fix-lint": "eslint . --fix"
+  },
+  "dependencies": {
+    "@raycast/api": "latest",
+    "@raycast/utils": "latest",
+    "react": "latest"
+  },
+  "devDependencies": {
+    "@raycast/eslint-config": "latest",
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "eslint": "latest",
+    "prettier": "^3.8.1",
+    "typescript": "latest"
+  }
+}
