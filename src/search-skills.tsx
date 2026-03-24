@@ -94,7 +94,7 @@ export default function SearchSkillsCommand() {
       isShowingDetail
       selectedItemId={selectedItemId}
       searchBarPlaceholder="Search by name, description, or content"
-      onSelectionChange={setSelectedItemId}
+      onSelectionChange={(id) => setSelectedItemId(id ?? undefined)}
       onSearchTextChange={setSearchText}
       searchBarAccessory={
         <List.Dropdown
