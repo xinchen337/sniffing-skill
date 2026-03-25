@@ -265,39 +265,13 @@ function inferTitleFromPath(filePath: string) {
   return path.basename(filePath, path.extname(filePath));
 }
 
-export async function createSkillFile(
-  toolId: ToolId,
-  values: { title: string; description: string; body: string; slug: string },
-) {
-  const tool = getToolDefinition(toolId);
-  if (!tool.createTarget || !tool.createKind) {
-    throw new Error(`${tool.title} does not support creation in this version.`);
-  }
-
-  const filePath = tool.createTarget(values.slug);
-  const content = renderSkillTemplate(
-    toolId,
-    tool.createKind,
-    values.title,
-    values.description,
-    values.body,
-    values.slug,
-  );
-  await fs.mkdir(path.dirname(filePath), { recursive: true });
-  await fs.writeFile(filePath, content, "utf8");
-  return filePath;
-}
-
 export async function installSkill(skill: SkillRecord, targetTool: ToolId) {
-  const tool = getToolDefinition(targetTool);
-  if (!tool.createTarget) {
+  const { filePath, slug, tool } = getInstallTargetInfo(skill, targetTool);
+  if (await fileExists(filePath)) {
     throw new Error(
-      `${tool.title} cannot receive installed skills in this version.`,
+      `A skill named "${slug}" already exists in ${tool.title}. Rename or remove the existing file first.`,
     );
   }
-
-  const slug = slugify(skill.title);
-  const filePath = tool.createTarget(slug);
   await fs.mkdir(path.dirname(filePath), { recursive: true });
   await fs.writeFile(
     filePath,
@@ -305,6 +279,24 @@ export async function installSkill(skill: SkillRecord, targetTool: ToolId) {
     "utf8",
   );
   return filePath;
+}
+
+export async function getInstallConflictMessage(
+  skill: SkillRecord,
+  targetTool: ToolId,
+) {
+  const { filePath, slug, tool } = getInstallTargetInfo(skill, targetTool);
+  const exists = await fileExists(filePath);
+
+  return {
+    exists,
+    slug,
+    toolTitle: tool.title,
+    filePath,
+    message: exists
+      ? `A skill named "${slug}" already exists in ${tool.title}. Installing now would fail until you rename or remove the existing file.`
+      : `This will copy "${skill.title}" into ${tool.title} as "${slug}".`,
+  };
 }
 
 export async function updateSkillContent(filePath: string, content: string) {
@@ -375,4 +367,27 @@ function stripFrontmatter(content: string) {
 
 function ensureTrailingNewline(content: string) {
   return content.endsWith("\n") ? content : `${content}\n`;
+}
+
+function getInstallTargetInfo(skill: SkillRecord, targetTool: ToolId) {
+  const tool = getToolDefinition(targetTool);
+  if (!tool.createTarget) {
+    throw new Error(
+      `${tool.title} cannot receive installed skills in this version.`,
+    );
+  }
+
+  const slug = slugify(skill.title);
+  const filePath = tool.createTarget(slug);
+
+  return { filePath, slug, tool };
+}
+
+async function fileExists(filePath: string) {
+  try {
+    await fs.access(filePath);
+    return true;
+  } catch {
+    return false;
+  }
 }

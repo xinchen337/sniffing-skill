@@ -18,6 +18,7 @@ import { useCachedPromise } from "@raycast/utils";
 import { useMemo, useState } from "react";
 import {
   getCachedSkills,
+  getInstallConflictMessage,
   getFavoriteSkillIds,
   installSkill,
   scanSkills,
@@ -319,9 +320,13 @@ function InstallSkillForm(props: {
                   onAction={async () => {
                     setIsInstalling(true);
                     try {
+                      const conflict = await getInstallConflictMessage(
+                        props.skill,
+                        tool.id,
+                      );
                       const shouldContinue = await confirmAlert({
                         title: `Install into ${tool.title}?`,
-                        message: `This will copy "${props.skill.title}" into ${tool.title}.`,
+                        message: `${conflict.message}\n\nTarget: ${conflict.filePath}`,
                         primaryAction: {
                           title: "Install Skill",
                         },
